@@ -46,6 +46,8 @@ namespace VRand
     private: System::Windows::Forms::Label^ lbl_fileRoot;
     private: System::Windows::Forms::TextBox^ txt_fileRoot;
 
+    private: System::String^ emoji_pause = "⏸️";
+    private: System::String^ emoji_play = "▶️";
 
 
     private: System::ComponentModel::BackgroundWorker^ backgroundWorker1;
@@ -85,6 +87,7 @@ namespace VRand
     private: System::Windows::Forms::Button^ btn_stop;
     private: System::Windows::Forms::Button^ btn_prev;
     private: System::Windows::Forms::Button^ btn_next;
+    private: System::Windows::Forms::Button^ btn_pause;
 
 
 
@@ -114,6 +117,7 @@ namespace VRand
             this->btn_stop = (gcnew System::Windows::Forms::Button());
             this->btn_prev = (gcnew System::Windows::Forms::Button());
             this->btn_next = (gcnew System::Windows::Forms::Button());
+            this->btn_pause = (gcnew System::Windows::Forms::Button());
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
@@ -174,9 +178,9 @@ namespace VRand
             this->btn_randomize->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_randomize->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_randomize->Location = System::Drawing::Point(12, 412);
+            this->btn_randomize->Location = System::Drawing::Point(12, 414);
             this->btn_randomize->Name = L"btn_randomize";
-            this->btn_randomize->Size = System::Drawing::Size(115, 42);
+            this->btn_randomize->Size = System::Drawing::Size(115, 40);
             this->btn_randomize->TabIndex = 7;
             this->btn_randomize->Text = L"Randomize List";
             this->btn_randomize->UseVisualStyleBackColor = true;
@@ -191,7 +195,7 @@ namespace VRand
             this->axVLCPlugin21->Location = System::Drawing::Point(758, 4);
             this->axVLCPlugin21->Name = L"axVLCPlugin21";
             this->axVLCPlugin21->OcxState = (cli::safe_cast<System::Windows::Forms::AxHost::State^>(resources->GetObject(L"axVLCPlugin21.OcxState")));
-            this->axVLCPlugin21->Size = System::Drawing::Size(740, 450);
+            this->axVLCPlugin21->Size = System::Drawing::Size(739, 449);
             this->axVLCPlugin21->TabIndex = 8;
             // 
             // btn_playAll
@@ -199,9 +203,9 @@ namespace VRand
             this->btn_playAll->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_playAll->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_playAll->Location = System::Drawing::Point(467, 408);
+            this->btn_playAll->Location = System::Drawing::Point(133, 414);
             this->btn_playAll->Name = L"btn_playAll";
-            this->btn_playAll->Size = System::Drawing::Size(63, 42);
+            this->btn_playAll->Size = System::Drawing::Size(63, 40);
             this->btn_playAll->TabIndex = 9;
             this->btn_playAll->Text = L"Play All";
             this->btn_playAll->UseVisualStyleBackColor = true;
@@ -210,11 +214,11 @@ namespace VRand
             // btn_stop
             // 
             this->btn_stop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
-            this->btn_stop->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 20.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+            this->btn_stop->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_stop->Location = System::Drawing::Point(617, 409);
+            this->btn_stop->Location = System::Drawing::Point(658, 413);
             this->btn_stop->Name = L"btn_stop";
-            this->btn_stop->Size = System::Drawing::Size(54, 41);
+            this->btn_stop->Size = System::Drawing::Size(44, 40);
             this->btn_stop->TabIndex = 11;
             this->btn_stop->Text = L"⏹️";
             this->btn_stop->UseVisualStyleBackColor = true;
@@ -223,34 +227,48 @@ namespace VRand
             // btn_prev
             // 
             this->btn_prev->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
-            this->btn_prev->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+            this->btn_prev->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_prev->Location = System::Drawing::Point(536, 409);
+            this->btn_prev->Location = System::Drawing::Point(558, 413);
             this->btn_prev->Name = L"btn_prev";
-            this->btn_prev->Size = System::Drawing::Size(75, 41);
+            this->btn_prev->Size = System::Drawing::Size(44, 40);
             this->btn_prev->TabIndex = 12;
-            this->btn_prev->Text = L"Previous";
+            this->btn_prev->Text = L"⏮️";
             this->btn_prev->UseVisualStyleBackColor = true;
             this->btn_prev->Click += gcnew System::EventHandler(this, &MainForm::btn_prev_Click);
             // 
             // btn_next
             // 
             this->btn_next->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
-            this->btn_next->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+            this->btn_next->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_next->Location = System::Drawing::Point(677, 408);
+            this->btn_next->Location = System::Drawing::Point(708, 413);
             this->btn_next->Name = L"btn_next";
-            this->btn_next->Size = System::Drawing::Size(75, 42);
+            this->btn_next->Size = System::Drawing::Size(44, 40);
             this->btn_next->TabIndex = 13;
-            this->btn_next->Text = L"Next";
+            this->btn_next->Text = L"⏭️";
             this->btn_next->UseVisualStyleBackColor = true;
             this->btn_next->Click += gcnew System::EventHandler(this, &MainForm::btn_next_Click);
+            // 
+            // btn_pause
+            // 
+            this->btn_pause->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
+            this->btn_pause->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->btn_pause->Location = System::Drawing::Point(608, 413);
+            this->btn_pause->Name = L"btn_pause";
+            this->btn_pause->Size = System::Drawing::Size(44, 40);
+            this->btn_pause->TabIndex = 14;
+            this->btn_pause->Text = L"⏸️";
+            this->btn_pause->UseVisualStyleBackColor = true;
+            this->btn_pause->Click += gcnew System::EventHandler(this, &MainForm::btn_pause_Click);
             // 
             // MainForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1513, 462);
+            this->Controls->Add(this->btn_pause);
             this->Controls->Add(this->btn_next);
             this->Controls->Add(this->btn_prev);
             this->Controls->Add(this->btn_stop);
@@ -293,7 +311,7 @@ namespace VRand
         lstVw_files->SelectedItems->Clear();
         this->lstVw_files->Items->Clear();
 
-        for (int i = 0; i < m_videoFiles->size(); i++)
+        for (int i = 0; i < static_cast<int>(m_videoFiles->size()); i++)
         {
             System::String^ fileName = gcnew System::String(m_videoFiles->at(i).path().filename().string().c_str());
             System::String^ filePath = gcnew System::String(m_videoFiles->at(i).path().c_str());
@@ -344,6 +362,9 @@ namespace VRand
     
     private: System::Void btn_playAll_Click(System::Object^ sender, System::EventArgs^ e) 
     {
+        axVLCPlugin21->playlist->stop();
+        axVLCPlugin21->playlist->clear();
+
         if (this->lstVw_files->Items->Count > 0)
         {
             lstVw_files->Items[0]->Focused = true;
@@ -387,6 +408,23 @@ namespace VRand
     private: System::Void btn_prev_Click(System::Object^ sender, System::EventArgs^ e)
     {
         axVLCPlugin21->playlist->prev();
+    }
+
+    private: System::Void btn_pause_Click(System::Object^ sender, System::EventArgs^ e) 
+    {
+        if (axVLCPlugin21->playlist->itemCount > 0)
+        {
+            if (axVLCPlugin21->playlist->isPlaying)
+            {
+                axVLCPlugin21->playlist->pause();
+                this->btn_pause->Text = emoji_play;
+            }
+            else
+            {
+                axVLCPlugin21->playlist->play();
+                this->btn_pause->Text = emoji_pause;
+            }
+        }
     }
 };
 }

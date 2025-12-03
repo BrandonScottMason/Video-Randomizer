@@ -343,13 +343,37 @@ namespace VRand
     private: System::Void PopulateFileList(System::String^ folderPath)
     {
         std::string path = msclr::interop::marshal_as<std::string>(folderPath);
-        for (const auto & entry : fs::recursive_directory_iterator(path))
-        {
-            System::String^ ext = gcnew System::String(entry.path().extension().c_str());
-            if (ContainsString(m_supportedVideoFileExtensions, ext)) // This skips any non-video files
+        try {
+            for (const auto& entry : fs::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
             {
-                m_videoFiles->push_back(entry);
+                System::String^ ext = gcnew System::String(entry.path().extension().c_str());
+                if (ContainsString(m_supportedVideoFileExtensions, ext)) // This skips any non-video files
+                {
+                    m_videoFiles->push_back(entry);
+                }
             }
+        }
+        catch (const fs::filesystem_error& e) 
+        {
+            std::cerr << "Filesystem Error: " << e.what() << std::endl;
+            System::Diagnostics::Debug::WriteLine("Filesystem Error: " + gcnew System::String(e.what()));
+
+            std::cerr << "Path: " << e.path1().string() << std::endl; // Path associated with the error
+            System::Diagnostics::Debug::WriteLine("Path: " + gcnew System::String(e.path1().c_str()));
+
+            if (e.path2().empty() == false) 
+            {
+                std::cerr << "Path2: " << e.path2().string() << std::endl; // Optional second path
+                System::Diagnostics::Debug::WriteLine("Path2: " + gcnew System::String(e.path2().c_str()));
+            }
+
+            std::cerr << "Error Code: " << e.code() << std::endl;
+            System::Diagnostics::Debug::WriteLine("Error Code Message: " + gcnew System::String(e.code().message().c_str()));
+        } 
+        catch (const std::exception& e) 
+        {
+            std::cerr << "General Exception: " << e.what() << std::endl;
+            System::Diagnostics::Debug::WriteLine("General Exception: " + gcnew System::String(e.what()));
         }
 
         // Sort the file names alphabetically

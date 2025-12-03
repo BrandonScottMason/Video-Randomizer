@@ -88,6 +88,9 @@ namespace VRand
     private: System::Windows::Forms::Button^ btn_prev;
     private: System::Windows::Forms::Button^ btn_next;
     private: System::Windows::Forms::Button^ btn_pause;
+    private: System::Windows::Forms::Button^ btn_fullScreen;
+
+
 
 
 
@@ -118,6 +121,7 @@ namespace VRand
             this->btn_prev = (gcnew System::Windows::Forms::Button());
             this->btn_next = (gcnew System::Windows::Forms::Button());
             this->btn_pause = (gcnew System::Windows::Forms::Button());
+            this->btn_fullScreen = (gcnew System::Windows::Forms::Button());
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
@@ -216,7 +220,7 @@ namespace VRand
             this->btn_stop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_stop->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_stop->Location = System::Drawing::Point(658, 413);
+            this->btn_stop->Location = System::Drawing::Point(377, 414);
             this->btn_stop->Name = L"btn_stop";
             this->btn_stop->Size = System::Drawing::Size(44, 40);
             this->btn_stop->TabIndex = 11;
@@ -229,7 +233,7 @@ namespace VRand
             this->btn_prev->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_prev->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_prev->Location = System::Drawing::Point(558, 413);
+            this->btn_prev->Location = System::Drawing::Point(277, 414);
             this->btn_prev->Name = L"btn_prev";
             this->btn_prev->Size = System::Drawing::Size(44, 40);
             this->btn_prev->TabIndex = 12;
@@ -242,7 +246,7 @@ namespace VRand
             this->btn_next->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_next->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_next->Location = System::Drawing::Point(708, 413);
+            this->btn_next->Location = System::Drawing::Point(427, 414);
             this->btn_next->Name = L"btn_next";
             this->btn_next->Size = System::Drawing::Size(44, 40);
             this->btn_next->TabIndex = 13;
@@ -255,7 +259,7 @@ namespace VRand
             this->btn_pause->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_pause->Font = (gcnew System::Drawing::Font(L"Segoe UI Emoji", 18, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_pause->Location = System::Drawing::Point(608, 413);
+            this->btn_pause->Location = System::Drawing::Point(327, 414);
             this->btn_pause->Name = L"btn_pause";
             this->btn_pause->Size = System::Drawing::Size(44, 40);
             this->btn_pause->TabIndex = 14;
@@ -263,11 +267,26 @@ namespace VRand
             this->btn_pause->UseVisualStyleBackColor = true;
             this->btn_pause->Click += gcnew System::EventHandler(this, &MainForm::btn_pause_Click);
             // 
+            // btn_fullScreen
+            // 
+            this->btn_fullScreen->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
+            this->btn_fullScreen->Cursor = System::Windows::Forms::Cursors::SizeAll;
+            this->btn_fullScreen->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->btn_fullScreen->Location = System::Drawing::Point(616, 414);
+            this->btn_fullScreen->Name = L"btn_fullScreen";
+            this->btn_fullScreen->Size = System::Drawing::Size(136, 40);
+            this->btn_fullScreen->TabIndex = 15;
+            this->btn_fullScreen->Text = L"Toggle Full Screen";
+            this->btn_fullScreen->UseVisualStyleBackColor = true;
+            this->btn_fullScreen->Click += gcnew System::EventHandler(this, &MainForm::btn_fullScreen_Click);
+            // 
             // MainForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1513, 462);
+            this->Controls->Add(this->btn_fullScreen);
             this->Controls->Add(this->btn_pause);
             this->Controls->Add(this->btn_next);
             this->Controls->Add(this->btn_prev);
@@ -360,7 +379,7 @@ namespace VRand
         AddVideoFileNamesAndPathsToListView();
     }
     
-    private: System::Void btn_playAll_Click(System::Object^ sender, System::EventArgs^ e) 
+    private: System::Void btn_playAll_Click(System::Object^ sender, System::EventArgs^ e)
     {
         axVLCPlugin21->playlist->stop();
         axVLCPlugin21->playlist->clear();
@@ -398,6 +417,7 @@ namespace VRand
     private: System::Void btn_stop_Click(System::Object^ sender, System::EventArgs^ e)
     {
         axVLCPlugin21->playlist->stop();
+        this->btn_pause->Text = emoji_play;
     }
 
     private: System::Void btn_next_Click(System::Object^ sender, System::EventArgs^ e)
@@ -410,7 +430,7 @@ namespace VRand
         axVLCPlugin21->playlist->prev();
     }
 
-    private: System::Void btn_pause_Click(System::Object^ sender, System::EventArgs^ e) 
+    private: System::Void btn_pause_Click(System::Object^ sender, System::EventArgs^ e)
     {
         if (axVLCPlugin21->playlist->itemCount > 0)
         {
@@ -425,6 +445,11 @@ namespace VRand
                 this->btn_pause->Text = emoji_pause;
             }
         }
+    }
+
+    private: System::Void btn_fullScreen_Click(System::Object^ sender, System::EventArgs^ e)
+    {
+        axVLCPlugin21->video->toggleFullscreen();
     }
 };
 }

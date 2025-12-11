@@ -56,6 +56,36 @@ namespace VRand
 
     protected:
 
+        virtual bool ProcessCmdKey(System::Windows::Forms::Message% msg, System::Windows::Forms::Keys keyData) override
+        {
+            if (keyData == System::Windows::Forms::Keys::F)
+            {
+                axVLCPlugin21->video->toggleFullscreen();
+                return true;
+            }
+
+            if (keyData == System::Windows::Forms::Keys::Space)
+            {
+                PlayPause();
+                return true;
+            }
+
+            if (keyData == System::Windows::Forms::Keys::N) // Next track in playlist
+            {
+                axVLCPlugin21->playlist->next();
+                return true;
+            }
+
+            if (keyData == System::Windows::Forms::Keys::P) // Previous track in playlist
+            {
+                axVLCPlugin21->playlist->prev();
+                return true;
+            }
+
+            // For keys that are not processed, call the base class's method
+            return __super::ProcessCmdKey(msg, keyData);
+        };
+
     private:
         /// <summary>
         /// Required designer variable.
@@ -263,7 +293,7 @@ namespace VRand
             this->btn_pause->Name = L"btn_pause";
             this->btn_pause->Size = System::Drawing::Size(44, 40);
             this->btn_pause->TabIndex = 14;
-            this->btn_pause->Text = L"⏸️";
+            this->btn_pause->Text = L"▶️";
             this->btn_pause->UseVisualStyleBackColor = true;
             this->btn_pause->Click += gcnew System::EventHandler(this, &MainForm::btn_pause_Click);
             // 
@@ -273,11 +303,11 @@ namespace VRand
             this->btn_fullScreen->Cursor = System::Windows::Forms::Cursors::SizeAll;
             this->btn_fullScreen->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_fullScreen->Location = System::Drawing::Point(616, 414);
+            this->btn_fullScreen->Location = System::Drawing::Point(594, 414);
             this->btn_fullScreen->Name = L"btn_fullScreen";
-            this->btn_fullScreen->Size = System::Drawing::Size(136, 40);
+            this->btn_fullScreen->Size = System::Drawing::Size(158, 40);
             this->btn_fullScreen->TabIndex = 15;
-            this->btn_fullScreen->Text = L"Toggle Full Screen";
+            this->btn_fullScreen->Text = L"Toggle Full Screen (F)";
             this->btn_fullScreen->UseVisualStyleBackColor = true;
             this->btn_fullScreen->Click += gcnew System::EventHandler(this, &MainForm::btn_fullScreen_Click);
             // 
@@ -382,6 +412,43 @@ namespace VRand
         AddVideoFileNamesAndPathsToListView();
     }
 
+    private: System::Void EnqueueAllFromListViewToVLCPlaylist()
+    {
+        lstVw_files->Items[0]->Focused = true;
+        lstVw_files->Items[0]->Selected = true;
+        lstVw_files->Items[0]->EnsureVisible();
+        lstVw_files->Select();
+
+        for each(System::Windows::Forms::ListViewItem ^ item in lstVw_files->Items)
+        {
+            Uri^ uri = gcnew Uri(item->SubItems[1]->Text);
+            axVLCPlugin21->playlist->add(uri->AbsoluteUri, item->Text, nullptr);
+        }
+    }
+
+    private: System::Void PlayPause()
+    {
+        if (axVLCPlugin21->playlist->itemCount > 0)
+        {
+            if (axVLCPlugin21->playlist->isPlaying)
+            {
+                axVLCPlugin21->playlist->pause();
+                this->btn_pause->Text = emoji_play;
+            }
+            else
+            {
+                axVLCPlugin21->playlist->play();
+                this->btn_pause->Text = emoji_pause;
+            }
+        }
+        else if (this->lstVw_files->Items->Count > 0)
+        {
+            EnqueueAllFromListViewToVLCPlaylist();
+            axVLCPlugin21->playlist->play();
+            this->btn_pause->Text = emoji_pause;
+        }
+    }
+
     private: System::Void btn_fileRoot_Click(System::Object^ sender, System::EventArgs^ e)
     {
         System::Windows::Forms::FolderBrowserDialog^ dialog = gcnew System::Windows::Forms::FolderBrowserDialog();
@@ -392,6 +459,13 @@ namespace VRand
             this->txt_fileRoot->Text = dialog->SelectedPath;
             m_videoFiles->clear();
             PopulateFileList(dialog->SelectedPath);
+
+            if (axVLCPlugin21->playlist->itemCount > 0)
+            {
+                axVLCPlugin21->playlist->stop();
+                axVLCPlugin21->playlist->clear();
+                this->btn_pause->Text = emoji_play;
+            }
         }
     }
 
@@ -410,23 +484,14 @@ namespace VRand
 
         if (this->lstVw_files->Items->Count > 0)
         {
-            lstVw_files->Items[0]->Focused = true;
-            lstVw_files->Items[0]->Selected = true;
-            lstVw_files->Items[0]->EnsureVisible();
-            lstVw_files->Select();
-
-            for each (System::Windows::Forms::ListViewItem ^ item in lstVw_files->Items)
-            {
-                Uri^ uri = gcnew Uri(item->SubItems[1]->Text);
-                axVLCPlugin21->playlist->add(uri->AbsoluteUri, item->Text, nullptr);
-            }
+            EnqueueAllFromListViewToVLCPlaylist();
         }
         /*else if (selectedVideoCount > 1)
         {
             Feature: Select multiple episodes, then push play to play the selected items in order.
             Note: Probably should be a separate button
         }*/
-        else
+        else // I don't really like this. I think I'd rather the button do nothing if there's no videos in the list.
         {
             System::Windows::Forms::OpenFileDialog^ openFileD = gcnew System::Windows::Forms::OpenFileDialog();
             if (openFileD->ShowDialog() == System::Windows::Forms::DialogResult::OK)
@@ -436,6 +501,7 @@ namespace VRand
         }
 
         axVLCPlugin21->playlist->play();
+        this->btn_pause->Text = emoji_pause;
     }
 
     private: System::Void btn_stop_Click(System::Object^ sender, System::EventArgs^ e)
@@ -456,19 +522,7 @@ namespace VRand
 
     private: System::Void btn_pause_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        if (axVLCPlugin21->playlist->itemCount > 0)
-        {
-            if (axVLCPlugin21->playlist->isPlaying)
-            {
-                axVLCPlugin21->playlist->pause();
-                this->btn_pause->Text = emoji_play;
-            }
-            else
-            {
-                axVLCPlugin21->playlist->play();
-                this->btn_pause->Text = emoji_pause;
-            }
-        }
+        PlayPause();
     }
 
     private: System::Void btn_fullScreen_Click(System::Object^ sender, System::EventArgs^ e)

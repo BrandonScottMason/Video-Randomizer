@@ -25,9 +25,6 @@ namespace VRand
         MainForm(void)
         {
             InitializeComponent();
-            //
-            //TODO: Add the constructor code here
-            //
             m_videoFiles = new std::vector<fs::directory_entry>();
         }
 
@@ -52,6 +49,10 @@ namespace VRand
 
     private: System::ComponentModel::BackgroundWorker^ backgroundWorker1;
     private: System::Windows::Forms::ListView^ lstVw_files;
+
+#ifdef _DEBUG
+    private: System::Windows::Forms::Button^ btn_debugMenu;
+#endif // _DEBUG
 
 
     protected:
@@ -152,6 +153,9 @@ namespace VRand
             this->btn_next = (gcnew System::Windows::Forms::Button());
             this->btn_pause = (gcnew System::Windows::Forms::Button());
             this->btn_fullScreen = (gcnew System::Windows::Forms::Button());
+#ifdef _DEBUG
+            this->btn_debugMenu = (gcnew System::Windows::Forms::Button());
+#endif // _DEBUG
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
@@ -311,11 +315,30 @@ namespace VRand
             this->btn_fullScreen->UseVisualStyleBackColor = true;
             this->btn_fullScreen->Click += gcnew System::EventHandler(this, &MainForm::btn_fullScreen_Click);
             // 
+            // btn_debugMenu
+            //
+#ifdef _DEBUG
+            this->btn_debugMenu->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
+            this->btn_debugMenu->Font = (gcnew System::Drawing::Font(L"Consolas", 24, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->btn_debugMenu->ForeColor = System::Drawing::Color::Red;
+            this->btn_debugMenu->Location = System::Drawing::Point(230, 414);
+            this->btn_debugMenu->Name = L"btn_debugMenu";
+            this->btn_debugMenu->Size = System::Drawing::Size(25, 40);
+            this->btn_debugMenu->TabIndex = 16;
+            this->btn_debugMenu->Text = L"!";
+            this->btn_debugMenu->UseVisualStyleBackColor = true;
+            this->btn_debugMenu->Click += gcnew System::EventHandler(this, &MainForm::btn_debugMenu_Click);
+#endif // _DEBUG
+            // 
             // MainForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1513, 462);
+#ifdef _DEBUG
+            this->Controls->Add(this->btn_debugMenu);
+#endif
             this->Controls->Add(this->btn_fullScreen);
             this->Controls->Add(this->btn_pause);
             this->Controls->Add(this->btn_next);
@@ -353,6 +376,18 @@ namespace VRand
             }
         }
         return false;
+    }
+
+    private: System::Void SetEnabledForAllButtons(bool enable)
+    {
+        for each (System::Windows::Forms::Control ^ c in this->Controls)
+        {
+            System::Windows::Forms::Button^ btn = dynamic_cast<System::Windows::Forms::Button^>(c);
+            if (btn != nullptr)
+            {
+                btn->Enabled = enable;
+            }
+        }
     }
 
     private: System::Void AddVideoFileNamesAndPathsToListView()
@@ -405,11 +440,6 @@ namespace VRand
             std::cerr << "General Exception: " << e.what() << std::endl;
             System::Diagnostics::Debug::WriteLine("General Exception: " + gcnew System::String(e.what()));
         }
-
-        // Sort the file names alphabetically
-        std::sort(m_videoFiles->begin(), m_videoFiles->end());
-
-        AddVideoFileNamesAndPathsToListView();
     }
 
     private: System::Void EnqueueAllFromListViewToVLCPlaylist()
@@ -459,6 +489,10 @@ namespace VRand
             this->txt_fileRoot->Text = dialog->SelectedPath;
             m_videoFiles->clear();
             PopulateFileList(dialog->SelectedPath);
+            // Sort the file names alphabetically
+            std::sort(m_videoFiles->begin(), m_videoFiles->end());
+
+            AddVideoFileNamesAndPathsToListView();
 
             if (axVLCPlugin21->playlist->itemCount > 0)
             {
@@ -529,5 +563,28 @@ namespace VRand
     {
         axVLCPlugin21->video->toggleFullscreen();
     }
+
+#ifdef _DEBUG
+    private: System::Void btn_debugMenu_Click(System::Object^ sender, System::EventArgs^ e) 
+    {
+        System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Run the PopulateFileList Test?", "PopulateFileList", System::Windows::Forms::MessageBoxButtons::YesNo);
+        
+        if (result == System::Windows::Forms::DialogResult::Yes)
+        {
+            UnitTestPopulateFileList();
+        }
+    }
+
+    private: System::Void UnitTestPopulateFileList()
+    {
+        SetEnabledForAllButtons(false);
+        m_videoFiles->clear();
+        PopulateFileList("C:\\"); // This is a pretty good stress test since it has a lot of files and folders, and some permission denied folders
+        System::Windows::Forms::MessageBox::Show("Scanned C: and found " + m_videoFiles->size() + " videos.", "PopulateFileList Reuslts");
+        SetEnabledForAllButtons(true);
+        AddVideoFileNamesAndPathsToListView();
+    }
+#endif // _DEBUG
+
 };
 }

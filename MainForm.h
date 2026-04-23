@@ -25,6 +25,14 @@ namespace VRand
         MainForm(void)
         {
             InitializeComponent();
+#ifdef _DEBUG
+            this->btn_debugMenu->Enabled = true;
+            this->btn_debugMenu->Visible = true;
+#else
+            this->btn_debugMenu->Enabled = false;
+            this->btn_debugMenu->Visible = false;
+#endif // _DEBUG
+
             m_videoFiles = new std::vector<fs::directory_entry>();
         }
 
@@ -50,9 +58,7 @@ namespace VRand
     private: System::ComponentModel::BackgroundWorker^ backgroundWorker1;
     private: System::Windows::Forms::ListView^ lstVw_files;
 
-#ifdef _DEBUG
     private: System::Windows::Forms::Button^ btn_debugMenu;
-#endif // _DEBUG
 
 
     protected:
@@ -153,9 +159,7 @@ namespace VRand
             this->btn_next = (gcnew System::Windows::Forms::Button());
             this->btn_pause = (gcnew System::Windows::Forms::Button());
             this->btn_fullScreen = (gcnew System::Windows::Forms::Button());
-#ifdef _DEBUG
             this->btn_debugMenu = (gcnew System::Windows::Forms::Button());
-#endif // _DEBUG
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
@@ -317,7 +321,6 @@ namespace VRand
             // 
             // btn_debugMenu
             //
-#ifdef _DEBUG
             this->btn_debugMenu->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_debugMenu->Font = (gcnew System::Drawing::Font(L"Consolas", 24, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
@@ -329,16 +332,13 @@ namespace VRand
             this->btn_debugMenu->Text = L"!";
             this->btn_debugMenu->UseVisualStyleBackColor = true;
             this->btn_debugMenu->Click += gcnew System::EventHandler(this, &MainForm::btn_debugMenu_Click);
-#endif // _DEBUG
             // 
             // MainForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1513, 462);
-#ifdef _DEBUG
             this->Controls->Add(this->btn_debugMenu);
-#endif
             this->Controls->Add(this->btn_fullScreen);
             this->Controls->Add(this->btn_pause);
             this->Controls->Add(this->btn_next);

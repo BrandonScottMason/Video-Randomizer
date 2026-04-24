@@ -1,6 +1,7 @@
 ﻿#pragma once
 #include <msclr/marshal_cppstd.h>
 #include <string>
+#include <shobjidl_core.h>
 #include <iostream>
 #include <filesystem>
 #include <vector>
@@ -48,8 +49,8 @@ namespace VRand
             }
         }
     private: System::Windows::Forms::Button^ btn_fileRoot;
-    private: System::Windows::Forms::Label^ lbl_fileRoot;
-    private: System::Windows::Forms::TextBox^ txt_fileRoot;
+
+
 
     private: System::String^ emoji_pause = "⏸️";
     private: System::String^ emoji_play = "▶️";
@@ -57,9 +58,8 @@ namespace VRand
 
     private: System::ComponentModel::BackgroundWorker^ backgroundWorker1;
     private: System::Windows::Forms::ListView^ lstVw_files;
-
+    private: System::Windows::Forms::Button^ btn_clearList;
     private: System::Windows::Forms::Button^ btn_debugMenu;
-
 
     protected:
 
@@ -118,18 +118,11 @@ namespace VRand
         System::Windows::Forms::ListViewItem^ m_listViewItem;
     private: AxAXVLC::AxVLCPlugin2^ axVLCPlugin21;
     private: System::Windows::Forms::Button^ btn_playAll;
-
-
-
     private: System::Windows::Forms::Button^ btn_stop;
     private: System::Windows::Forms::Button^ btn_prev;
     private: System::Windows::Forms::Button^ btn_next;
     private: System::Windows::Forms::Button^ btn_pause;
     private: System::Windows::Forms::Button^ btn_fullScreen;
-
-
-
-
 
         /// <summary>
         ///    Directory Entries that the List View is displaying
@@ -145,8 +138,6 @@ namespace VRand
         {
             System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MainForm::typeid));
             this->btn_fileRoot = (gcnew System::Windows::Forms::Button());
-            this->lbl_fileRoot = (gcnew System::Windows::Forms::Label());
-            this->txt_fileRoot = (gcnew System::Windows::Forms::TextBox());
             this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
             this->lstVw_files = (gcnew System::Windows::Forms::ListView());
             this->columnHeader1 = (gcnew System::Windows::Forms::ColumnHeader());
@@ -160,34 +151,21 @@ namespace VRand
             this->btn_pause = (gcnew System::Windows::Forms::Button());
             this->btn_fullScreen = (gcnew System::Windows::Forms::Button());
             this->btn_debugMenu = (gcnew System::Windows::Forms::Button());
+            this->btn_clearList = (gcnew System::Windows::Forms::Button());
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
             // btn_fileRoot
             // 
-            this->btn_fileRoot->Location = System::Drawing::Point(717, 4);
+            this->btn_fileRoot->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->btn_fileRoot->Location = System::Drawing::Point(12, 4);
             this->btn_fileRoot->Name = L"btn_fileRoot";
-            this->btn_fileRoot->Size = System::Drawing::Size(35, 22);
+            this->btn_fileRoot->Size = System::Drawing::Size(30, 25);
             this->btn_fileRoot->TabIndex = 0;
-            this->btn_fileRoot->Text = L"...";
+            this->btn_fileRoot->Text = L"+";
             this->btn_fileRoot->UseVisualStyleBackColor = true;
             this->btn_fileRoot->Click += gcnew System::EventHandler(this, &MainForm::btn_fileRoot_Click);
-            // 
-            // lbl_fileRoot
-            // 
-            this->lbl_fileRoot->AutoSize = true;
-            this->lbl_fileRoot->Location = System::Drawing::Point(12, 9);
-            this->lbl_fileRoot->Name = L"lbl_fileRoot";
-            this->lbl_fileRoot->Size = System::Drawing::Size(92, 13);
-            this->lbl_fileRoot->TabIndex = 1;
-            this->lbl_fileRoot->Text = L"Root Video Folder";
-            // 
-            // txt_fileRoot
-            // 
-            this->txt_fileRoot->Location = System::Drawing::Point(110, 6);
-            this->txt_fileRoot->Name = L"txt_fileRoot";
-            this->txt_fileRoot->Size = System::Drawing::Size(601, 20);
-            this->txt_fileRoot->TabIndex = 2;
             // 
             // lstVw_files
             // 
@@ -220,9 +198,9 @@ namespace VRand
             this->btn_randomize->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_randomize->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_randomize->Location = System::Drawing::Point(12, 414);
+            this->btn_randomize->Location = System::Drawing::Point(48, 4);
             this->btn_randomize->Name = L"btn_randomize";
-            this->btn_randomize->Size = System::Drawing::Size(115, 40);
+            this->btn_randomize->Size = System::Drawing::Size(115, 25);
             this->btn_randomize->TabIndex = 7;
             this->btn_randomize->Text = L"Randomize List";
             this->btn_randomize->UseVisualStyleBackColor = true;
@@ -237,7 +215,7 @@ namespace VRand
             this->axVLCPlugin21->Location = System::Drawing::Point(758, 4);
             this->axVLCPlugin21->Name = L"axVLCPlugin21";
             this->axVLCPlugin21->OcxState = (cli::safe_cast<System::Windows::Forms::AxHost::State^>(resources->GetObject(L"axVLCPlugin21.OcxState")));
-            this->axVLCPlugin21->Size = System::Drawing::Size(739, 449);
+            this->axVLCPlugin21->Size = System::Drawing::Size(740, 450);
             this->axVLCPlugin21->TabIndex = 8;
             // 
             // btn_playAll
@@ -245,7 +223,7 @@ namespace VRand
             this->btn_playAll->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_playAll->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_playAll->Location = System::Drawing::Point(133, 414);
+            this->btn_playAll->Location = System::Drawing::Point(12, 414);
             this->btn_playAll->Name = L"btn_playAll";
             this->btn_playAll->Size = System::Drawing::Size(63, 40);
             this->btn_playAll->TabIndex = 9;
@@ -320,12 +298,12 @@ namespace VRand
             this->btn_fullScreen->Click += gcnew System::EventHandler(this, &MainForm::btn_fullScreen_Click);
             // 
             // btn_debugMenu
-            //
+            // 
             this->btn_debugMenu->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_debugMenu->Font = (gcnew System::Drawing::Font(L"Consolas", 24, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
             this->btn_debugMenu->ForeColor = System::Drawing::Color::Red;
-            this->btn_debugMenu->Location = System::Drawing::Point(230, 414);
+            this->btn_debugMenu->Location = System::Drawing::Point(177, 414);
             this->btn_debugMenu->Name = L"btn_debugMenu";
             this->btn_debugMenu->Size = System::Drawing::Size(25, 40);
             this->btn_debugMenu->TabIndex = 16;
@@ -333,11 +311,24 @@ namespace VRand
             this->btn_debugMenu->UseVisualStyleBackColor = true;
             this->btn_debugMenu->Click += gcnew System::EventHandler(this, &MainForm::btn_debugMenu_Click);
             // 
+            // btn_clearList
+            // 
+            this->btn_clearList->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->btn_clearList->Location = System::Drawing::Point(668, 4);
+            this->btn_clearList->Name = L"btn_clearList";
+            this->btn_clearList->Size = System::Drawing::Size(84, 25);
+            this->btn_clearList->TabIndex = 17;
+            this->btn_clearList->Text = L"Clear List";
+            this->btn_clearList->UseVisualStyleBackColor = true;
+            this->btn_clearList->Click += gcnew System::EventHandler(this, &MainForm::btn_clearList_Click);
+            // 
             // MainForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1513, 462);
+            this->Controls->Add(this->btn_clearList);
             this->Controls->Add(this->btn_debugMenu);
             this->Controls->Add(this->btn_fullScreen);
             this->Controls->Add(this->btn_pause);
@@ -348,14 +339,11 @@ namespace VRand
             this->Controls->Add(this->axVLCPlugin21);
             this->Controls->Add(this->btn_randomize);
             this->Controls->Add(this->lstVw_files);
-            this->Controls->Add(this->txt_fileRoot);
-            this->Controls->Add(this->lbl_fileRoot);
             this->Controls->Add(this->btn_fileRoot);
             this->Name = L"MainForm";
             this->Text = L"Video Randomizer";
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->EndInit();
             this->ResumeLayout(false);
-            this->PerformLayout();
 
         }
 #pragma endregion
@@ -405,7 +393,7 @@ namespace VRand
         }
     }
 
-    private: System::Void PopulateFileList(System::String^ folderPath)
+    private: System::Void AddToFileList(System::String^ folderPath)
     {
         std::string path = msclr::interop::marshal_as<std::string>(folderPath);
         try {
@@ -479,27 +467,55 @@ namespace VRand
         }
     }
 
+    private: System::Void Stop()
+    {
+        axVLCPlugin21->playlist->stop();
+        this->btn_pause->Text = emoji_play;
+    }
+
     private: System::Void btn_fileRoot_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        System::Windows::Forms::FolderBrowserDialog^ dialog = gcnew System::Windows::Forms::FolderBrowserDialog();
-        System::Windows::Forms::DialogResult result = dialog->ShowDialog();
+        HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
+        IFileOpenDialog* pFileOpen = nullptr;
+        hr = CoCreateInstance(CLSID_FileOpenDialog, NULL, CLSCTX_ALL, IID_PPV_ARGS(&pFileOpen));
+        pFileOpen->SetOptions(FOS_PICKFOLDERS | FOS_ALLOWMULTISELECT);
 
-        if (result == System::Windows::Forms::DialogResult::OK)
+        if (SUCCEEDED(hr))
         {
-            this->txt_fileRoot->Text = dialog->SelectedPath;
-            m_videoFiles->clear();
-            PopulateFileList(dialog->SelectedPath);
-            // Sort the file names alphabetically
-            std::sort(m_videoFiles->begin(), m_videoFiles->end());
-
-            AddVideoFileNamesAndPathsToListView();
-
-            if (axVLCPlugin21->playlist->itemCount > 0)
+            if (SUCCEEDED(pFileOpen->Show(NULL)))
             {
-                axVLCPlugin21->playlist->stop();
-                axVLCPlugin21->playlist->clear();
-                this->btn_pause->Text = emoji_play;
+                IShellItemArray* pItems;
+                if (SUCCEEDED(pFileOpen->GetResults(&pItems)))
+                {
+                    DWORD dwNumItems = 0;
+                    pItems->GetCount(&dwNumItems);
+                    for (DWORD i = 0; i < dwNumItems; i++)
+                    {
+                        IShellItem* pItem;
+                        if (SUCCEEDED(pItems->GetItemAt(i, &pItem)))
+                        {
+                            LPWSTR lpszFilePath;
+                            pItem->GetDisplayName(SIGDN_FILESYSPATH, &lpszFilePath);
+                            AddToFileList(gcnew String(lpszFilePath));
+                            //Console::WriteLine("Selected: {0}", gcnew String(lpszFilePath));
+                            CoTaskMemFree(lpszFilePath);
+                            pItem->Release();
+                        }
+                    }
+                    pItems->Release();
+                }
             }
+            pFileOpen->Release();
+        }
+        CoUninitialize();
+
+        std::sort(m_videoFiles->begin(), m_videoFiles->end());
+
+        AddVideoFileNamesAndPathsToListView();
+
+        if (axVLCPlugin21->playlist->itemCount > 0)
+        {
+            Stop();
         }
     }
 
@@ -520,19 +536,6 @@ namespace VRand
         {
             EnqueueAllFromListViewToVLCPlaylist();
         }
-        /*else if (selectedVideoCount > 1)
-        {
-            Feature: Select multiple episodes, then push play to play the selected items in order.
-            Note: Probably should be a separate button
-        }*/
-        else // I don't really like this. I think I'd rather the button do nothing if there's no videos in the list.
-        {
-            System::Windows::Forms::OpenFileDialog^ openFileD = gcnew System::Windows::Forms::OpenFileDialog();
-            if (openFileD->ShowDialog() == System::Windows::Forms::DialogResult::OK)
-            {
-                axVLCPlugin21->playlist->add("file:///" + openFileD->FileName, openFileD->SafeFileName, nullptr);
-            }
-        }
 
         axVLCPlugin21->playlist->play();
         this->btn_pause->Text = emoji_pause;
@@ -540,8 +543,7 @@ namespace VRand
 
     private: System::Void btn_stop_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        axVLCPlugin21->playlist->stop();
-        this->btn_pause->Text = emoji_play;
+        Stop();
     }
 
     private: System::Void btn_next_Click(System::Object^ sender, System::EventArgs^ e)
@@ -564,27 +566,42 @@ namespace VRand
         axVLCPlugin21->video->toggleFullscreen();
     }
 
-#ifdef _DEBUG
+    private: System::Void btn_clearList_Click(System::Object^ sender, System::EventArgs^ e)
+    {
+        System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Are you sure you want to clear the list? It will also clear the VLC playlist. This cannot be undone.", "Clear List", System::Windows::Forms::MessageBoxButtons::YesNo);
+        if (result == System::Windows::Forms::DialogResult::Yes)
+        {
+            m_videoFiles->clear();
+            this->lstVw_files->Items->Clear();
+            if (axVLCPlugin21->playlist->isPlaying)
+            {
+                Stop();
+            }
+            axVLCPlugin21->playlist->clear();
+        }
+    }
+
     private: System::Void btn_debugMenu_Click(System::Object^ sender, System::EventArgs^ e) 
     {
+#ifdef _DEBUG
         System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Run the PopulateFileList Test?", "PopulateFileList", System::Windows::Forms::MessageBoxButtons::YesNo);
         
         if (result == System::Windows::Forms::DialogResult::Yes)
         {
             UnitTestPopulateFileList();
         }
+#endif // _DEBUG
     }
-
+#ifdef _DEBUG
     private: System::Void UnitTestPopulateFileList()
     {
         SetEnabledForAllButtons(false);
         m_videoFiles->clear();
-        PopulateFileList("C:\\"); // This is a pretty good stress test since it has a lot of files and folders, and some permission denied folders
+        AddToFileList("C:\\"); // This is a pretty good stress test since it has a lot of files and folders, and some permission denied folders
         System::Windows::Forms::MessageBox::Show("Scanned C: and found " + m_videoFiles->size() + " videos.", "PopulateFileList Reuslts");
         SetEnabledForAllButtons(true);
         AddVideoFileNamesAndPathsToListView();
     }
 #endif // _DEBUG
-
 };
 }

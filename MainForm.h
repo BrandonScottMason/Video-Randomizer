@@ -76,27 +76,59 @@ namespace VRand
 
         virtual bool ProcessCmdKey(System::Windows::Forms::Message% msg, System::Windows::Forms::Keys keyData) override
         {
-            if (keyData == System::Windows::Forms::Keys::F)
+            /// Full Screen Toggle
+            if (keyData == System::Windows::Forms::Keys::F) // F for full screen toggle (also match's VLC's default full screen toggle hotkey)
             {
-                axVLCPlugin21->video->toggleFullscreen();
+                ToggleFullScreen();
                 return true;
             }
 
-            if (keyData == System::Windows::Forms::Keys::Space)
+            /// Play/Pause
+            if (keyData == System::Windows::Forms::Keys::Space) // Space for play/pause (also match's VLC's default play/pause hotkey)
             {
                 PlayPause();
                 return true;
             }
 
-            if (keyData == System::Windows::Forms::Keys::N) // Next track in playlist
+            /// Stop
+            if (keyData == System::Windows::Forms::Keys::S) // S for stop (also match's VLC's default stop hotkey)
+            {
+                Stop();
+                return true;
+            }
+
+            /// Next track in playlist
+            if (keyData == System::Windows::Forms::Keys::N) // N for next (also match's VLC's default next hotkey)
             {
                 Next();
                 return true;
             }
 
-            if (keyData == System::Windows::Forms::Keys::P) // Previous track in playlist
+            /// Previous track in playlist
+            if (keyData == System::Windows::Forms::Keys::P) // P for previous (also match's VLC's default previous hotkey)
             {
                 Previous();
+                return true;
+            }
+
+            /// Add to playlist
+            if (keyData == (System::Windows::Forms::Keys::Oemplus | System::Windows::Forms::Keys::Control) || keyData == (System::Windows::Forms::Keys::Add | System::Windows::Forms::Keys::Control)) // Ctrl + Plus for adding to list
+            {
+                PromptAddToListView();
+                return true;
+            }
+
+            /// Randomize playlist
+            if (keyData == (System::Windows::Forms::Keys::R | System::Windows::Forms::Keys::Control)) // Ctrl + R for randomize (also match's VLC's default randomize hotkey)
+            {
+                RandomizeListView();
+                return true;
+            }
+
+            /// Clear playlist
+            if (keyData == System::Windows::Forms::Keys::Delete) // Delete to clear the list view
+            {
+                ClearListView();
                 return true;
             }
 
@@ -113,11 +145,11 @@ namespace VRand
         System::Windows::Forms::Button^ btn_fileRoot;
         System::Windows::Forms::Button^ btn_clearList;
         System::Windows::Forms::Button^ btn_debugMenu;
+        System::ComponentModel::IContainer^ components;
 
         /// <summary>
         /// Required designer variable.
         /// </summary>
-        System::ComponentModel::Container ^components;
         System::Windows::Forms::ColumnHeader^ columnHeader1;
 
         /// <summary>
@@ -143,6 +175,7 @@ namespace VRand
         System::Windows::Forms::Button^ btn_next;
         System::Windows::Forms::Button^ btn_pause;
         System::Windows::Forms::Button^ btn_fullScreen;
+private: System::Windows::Forms::ToolTip^ toolTip1;
 
         /// <summary>
         ///    Directory Entries that the List View is displaying
@@ -156,6 +189,7 @@ namespace VRand
         /// </summary>
         void InitializeComponent(void)
         {
+            this->components = (gcnew System::ComponentModel::Container());
             System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MainForm::typeid));
             this->btn_fileRoot = (gcnew System::Windows::Forms::Button());
             this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
@@ -171,6 +205,7 @@ namespace VRand
             this->btn_fullScreen = (gcnew System::Windows::Forms::Button());
             this->btn_debugMenu = (gcnew System::Windows::Forms::Button());
             this->btn_clearList = (gcnew System::Windows::Forms::Button());
+            this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
@@ -183,6 +218,7 @@ namespace VRand
             this->btn_fileRoot->Size = System::Drawing::Size(30, 25);
             this->btn_fileRoot->TabIndex = 0;
             this->btn_fileRoot->Text = L"+";
+            this->toolTip1->SetToolTip(this->btn_fileRoot, L"Add Folders (Ctrl +)");
             this->btn_fileRoot->UseVisualStyleBackColor = true;
             this->btn_fileRoot->Click += gcnew System::EventHandler(this, &MainForm::btn_fileRoot_Click);
             // 
@@ -222,6 +258,7 @@ namespace VRand
             this->btn_randomize->Size = System::Drawing::Size(115, 25);
             this->btn_randomize->TabIndex = 7;
             this->btn_randomize->Text = L"Randomize List";
+            this->toolTip1->SetToolTip(this->btn_randomize, L"(Ctrl R)");
             this->btn_randomize->UseVisualStyleBackColor = true;
             this->btn_randomize->Click += gcnew System::EventHandler(this, &MainForm::btn_randomize_Click);
             // 
@@ -247,6 +284,7 @@ namespace VRand
             this->btn_stop->Size = System::Drawing::Size(44, 40);
             this->btn_stop->TabIndex = 11;
             this->btn_stop->Text = L"⏹️";
+            this->toolTip1->SetToolTip(this->btn_stop, L"Stop (S)");
             this->btn_stop->UseVisualStyleBackColor = true;
             this->btn_stop->Click += gcnew System::EventHandler(this, &MainForm::btn_stop_Click);
             // 
@@ -260,6 +298,7 @@ namespace VRand
             this->btn_prev->Size = System::Drawing::Size(44, 40);
             this->btn_prev->TabIndex = 12;
             this->btn_prev->Text = L"⏮️";
+            this->toolTip1->SetToolTip(this->btn_prev, L"Previous (P)");
             this->btn_prev->UseVisualStyleBackColor = true;
             this->btn_prev->Click += gcnew System::EventHandler(this, &MainForm::btn_prev_Click);
             // 
@@ -273,6 +312,7 @@ namespace VRand
             this->btn_next->Size = System::Drawing::Size(44, 40);
             this->btn_next->TabIndex = 13;
             this->btn_next->Text = L"⏭️";
+            this->toolTip1->SetToolTip(this->btn_next, L"Next (N)");
             this->btn_next->UseVisualStyleBackColor = true;
             this->btn_next->Click += gcnew System::EventHandler(this, &MainForm::btn_next_Click);
             // 
@@ -286,6 +326,7 @@ namespace VRand
             this->btn_pause->Size = System::Drawing::Size(44, 40);
             this->btn_pause->TabIndex = 14;
             this->btn_pause->Text = L"▶️";
+            this->toolTip1->SetToolTip(this->btn_pause, L"Pause/Play (Space)");
             this->btn_pause->UseVisualStyleBackColor = true;
             this->btn_pause->Click += gcnew System::EventHandler(this, &MainForm::btn_pause_Click);
             // 
@@ -299,7 +340,8 @@ namespace VRand
             this->btn_fullScreen->Name = L"btn_fullScreen";
             this->btn_fullScreen->Size = System::Drawing::Size(158, 40);
             this->btn_fullScreen->TabIndex = 15;
-            this->btn_fullScreen->Text = L"Toggle Full Screen (F)";
+            this->btn_fullScreen->Text = L"Toggle Full Screen";
+            this->toolTip1->SetToolTip(this->btn_fullScreen, L"(F)");
             this->btn_fullScreen->UseVisualStyleBackColor = true;
             this->btn_fullScreen->Click += gcnew System::EventHandler(this, &MainForm::btn_fullScreen_Click);
             // 
@@ -326,6 +368,7 @@ namespace VRand
             this->btn_clearList->Size = System::Drawing::Size(84, 25);
             this->btn_clearList->TabIndex = 17;
             this->btn_clearList->Text = L"Clear List";
+            this->toolTip1->SetToolTip(this->btn_clearList, L"(Delete)");
             this->btn_clearList->UseVisualStyleBackColor = true;
             this->btn_clearList->Click += gcnew System::EventHandler(this, &MainForm::btn_clearList_Click);
             // 
@@ -495,7 +538,51 @@ namespace VRand
         axVLCPlugin21->playlist->prev();
     }
 
-    private: System::Void btn_fileRoot_Click(System::Object^ sender, System::EventArgs^ e)
+    private: System::Void ToggleFullScreen()
+    {
+        axVLCPlugin21->video->toggleFullscreen();
+    }
+
+    private: System::Void ClearListView()
+    {
+        System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Are you sure you want to clear the list? It will also clear the VLC playlist. This cannot be undone.", "Clear List", System::Windows::Forms::MessageBoxButtons::YesNo);
+        if (result == System::Windows::Forms::DialogResult::Yes)
+        {
+            m_videoFiles->clear();
+            lstVw_files->Items->Clear();
+            if (axVLCPlugin21->playlist->isPlaying)
+            {
+                Stop();
+            }
+            axVLCPlugin21->playlist->clear();
+
+            if (axVLCPlugin21->playlist->itemCount > 0)
+            {
+                m_listViewMatchesVLCPlaylist = false;
+            }
+            else if (axVLCPlugin21->playlist->itemCount == 0)
+            {
+                m_listViewMatchesVLCPlaylist = true; // Both lists are empty so they match again
+            }
+        }
+    }
+
+    private: System::Void RandomizeListView()
+    {
+        std::random_device rd;
+        std::mt19937 g(rd());
+        std::shuffle(m_videoFiles->begin(), m_videoFiles->end(), g);
+        lstVw_files->SelectedItems->Clear();
+        lstVw_files->Items->Clear();
+        AddVideoFileNamesAndPathsToListView();
+
+        if (axVLCPlugin21->playlist->itemCount > 0)
+        {
+            m_listViewMatchesVLCPlaylist = false; // The list may have the same contents but the order is different, so it no longer matches the VLC playlist
+        }
+    }
+
+    private: System::Void PromptAddToListView()
     {
         HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         IFileOpenDialog* pFileOpen = nullptr;
@@ -540,19 +627,14 @@ namespace VRand
         }
     }
 
+    private: System::Void btn_fileRoot_Click(System::Object^ sender, System::EventArgs^ e)
+    {
+        PromptAddToListView();
+    }
+
     private: System::Void btn_randomize_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        std::random_device rd;
-        std::mt19937 g(rd());
-        std::shuffle(m_videoFiles->begin(), m_videoFiles->end(), g);
-        lstVw_files->SelectedItems->Clear();
-        lstVw_files->Items->Clear();
-        AddVideoFileNamesAndPathsToListView();
-        
-        if (axVLCPlugin21->playlist->itemCount > 0)
-        {
-            m_listViewMatchesVLCPlaylist = false; // The list may have the same contents but the order is different, so it no longer matches the VLC playlist
-        }
+        RandomizeListView();
     }
 
     private: System::Void btn_stop_Click(System::Object^ sender, System::EventArgs^ e)
@@ -577,31 +659,12 @@ namespace VRand
 
     private: System::Void btn_fullScreen_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        axVLCPlugin21->video->toggleFullscreen();
+        ToggleFullScreen();
     }
 
     private: System::Void btn_clearList_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        System::Windows::Forms::DialogResult result = System::Windows::Forms::MessageBox::Show("Are you sure you want to clear the list? It will also clear the VLC playlist. This cannot be undone.", "Clear List", System::Windows::Forms::MessageBoxButtons::YesNo);
-        if (result == System::Windows::Forms::DialogResult::Yes)
-        {
-            m_videoFiles->clear();
-            lstVw_files->Items->Clear();
-            if (axVLCPlugin21->playlist->isPlaying)
-            {
-                Stop();
-            }
-            axVLCPlugin21->playlist->clear();
-
-            if (axVLCPlugin21->playlist->itemCount > 0)
-            {
-                m_listViewMatchesVLCPlaylist = false;
-            }
-            else if (axVLCPlugin21->playlist->itemCount == 0)
-            {
-                m_listViewMatchesVLCPlaylist = true; // Both lists are empty so they match again
-            }
-        }
+        ClearListView();
     }
 
     private: System::Void btn_debugMenu_Click(System::Object^ sender, System::EventArgs^ e) 

@@ -35,7 +35,32 @@ namespace VRand
 #endif // _DEBUG
 
             m_videoFiles = new std::vector<fs::directory_entry>();
+            axVLCPlugin21->MediaPlayerEndReached += gcnew EventHandler(this, &MainForm::PlayerEndReached);
+            axVLCPlugin21->MediaPlayerPaused += gcnew EventHandler(this, &MainForm::PlayerPaused);
+            axVLCPlugin21->MediaPlayerStopped += gcnew EventHandler(this, &MainForm::PlayerStopped);
+            axVLCPlugin21->MediaPlayerPlaying += gcnew EventHandler(this, &MainForm::PlayerPlaying);
         }
+
+    public: System::Void PlayerEndReached(System::Object^ sender, System::EventArgs^ e)
+    {
+        HighlightCurrentVLCItemInListView();
+    }
+
+    public: System::Void PlayerPaused(System::Object^ sender, System::EventArgs^ e)
+    {
+        this->btn_pause->Text = m_emojiPlay;
+    }
+
+    public: System::Void PlayerStopped(System::Object^ sender, System::EventArgs^ e)
+    {
+        this->btn_pause->Text = m_emojiPlay;
+    }
+
+    public: System::Void PlayerPlaying(System::Object^ sender, System::EventArgs^ e) // Happens to be called when a new video starts playing
+    {
+        this->btn_pause->Text = m_emojiPause;
+        HighlightCurrentVLCItemInListView();
+    }
 
     protected:
         /// <summary>
@@ -48,20 +73,6 @@ namespace VRand
                 delete components;
             }
         }
-    private: System::Windows::Forms::Button^ btn_fileRoot;
-
-
-
-    private: System::String^ emoji_pause = "⏸️";
-    private: System::String^ emoji_play = "▶️";
-
-
-    private: System::ComponentModel::BackgroundWorker^ backgroundWorker1;
-    private: System::Windows::Forms::ListView^ lstVw_files;
-    private: System::Windows::Forms::Button^ btn_clearList;
-    private: System::Windows::Forms::Button^ btn_debugMenu;
-
-    protected:
 
         virtual bool ProcessCmdKey(System::Windows::Forms::Message% msg, System::Windows::Forms::Keys keyData) override
         {
@@ -79,13 +90,13 @@ namespace VRand
 
             if (keyData == System::Windows::Forms::Keys::N) // Next track in playlist
             {
-                axVLCPlugin21->playlist->next();
+                Next();
                 return true;
             }
 
             if (keyData == System::Windows::Forms::Keys::P) // Previous track in playlist
             {
-                axVLCPlugin21->playlist->prev();
+                Previous();
                 return true;
             }
 
@@ -94,6 +105,15 @@ namespace VRand
         };
 
     private:
+        System::Boolean m_listViewMatchesVLCPlaylist = true;
+        System::String^ m_emojiPause = u8"⏸️";
+        System::String^ m_emojiPlay = u8"▶️";
+        System::ComponentModel::BackgroundWorker^ backgroundWorker1;
+        System::Windows::Forms::ListView^ lstVw_files;
+        System::Windows::Forms::Button^ btn_fileRoot;
+        System::Windows::Forms::Button^ btn_clearList;
+        System::Windows::Forms::Button^ btn_debugMenu;
+
         /// <summary>
         /// Required designer variable.
         /// </summary>
@@ -109,20 +129,20 @@ namespace VRand
             "avi", "qt", "wmv", "yuv", "rm", "asf", "amv", "mp4", "m4p", "m4v",
             "mpg", "mp2", "mpeg", "mpe", "mpv", "m4v", "svi", "3gp", "3g2", "mxf",
             "roq", "nsv", "flv", "f4v", "f4p", "f4a", "f4b", "mod" };
-    private: System::Windows::Forms::ColumnHeader^ columnHeader2;
-    private: System::Windows::Forms::Button^ btn_randomize;
+        System::Windows::Forms::ColumnHeader^ columnHeader2;
+        System::Windows::Forms::Button^ btn_randomize;
 
         /// <summary>
         /// Container for adding new items to the list view
         /// </summary>
         System::Windows::Forms::ListViewItem^ m_listViewItem;
-    private: AxAXVLC::AxVLCPlugin2^ axVLCPlugin21;
-    private: System::Windows::Forms::Button^ btn_playAll;
-    private: System::Windows::Forms::Button^ btn_stop;
-    private: System::Windows::Forms::Button^ btn_prev;
-    private: System::Windows::Forms::Button^ btn_next;
-    private: System::Windows::Forms::Button^ btn_pause;
-    private: System::Windows::Forms::Button^ btn_fullScreen;
+        AxAXVLC::AxVLCPlugin2^ axVLCPlugin21;
+
+        System::Windows::Forms::Button^ btn_stop;
+        System::Windows::Forms::Button^ btn_prev;
+        System::Windows::Forms::Button^ btn_next;
+        System::Windows::Forms::Button^ btn_pause;
+        System::Windows::Forms::Button^ btn_fullScreen;
 
         /// <summary>
         ///    Directory Entries that the List View is displaying
@@ -144,7 +164,6 @@ namespace VRand
             this->columnHeader2 = (gcnew System::Windows::Forms::ColumnHeader());
             this->btn_randomize = (gcnew System::Windows::Forms::Button());
             this->axVLCPlugin21 = (gcnew AxAXVLC::AxVLCPlugin2());
-            this->btn_playAll = (gcnew System::Windows::Forms::Button());
             this->btn_stop = (gcnew System::Windows::Forms::Button());
             this->btn_prev = (gcnew System::Windows::Forms::Button());
             this->btn_next = (gcnew System::Windows::Forms::Button());
@@ -218,19 +237,6 @@ namespace VRand
             this->axVLCPlugin21->Size = System::Drawing::Size(740, 450);
             this->axVLCPlugin21->TabIndex = 8;
             // 
-            // btn_playAll
-            // 
-            this->btn_playAll->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
-            this->btn_playAll->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
-                static_cast<System::Byte>(0)));
-            this->btn_playAll->Location = System::Drawing::Point(12, 414);
-            this->btn_playAll->Name = L"btn_playAll";
-            this->btn_playAll->Size = System::Drawing::Size(63, 40);
-            this->btn_playAll->TabIndex = 9;
-            this->btn_playAll->Text = L"Play All";
-            this->btn_playAll->UseVisualStyleBackColor = true;
-            this->btn_playAll->Click += gcnew System::EventHandler(this, &MainForm::btn_playAll_Click);
-            // 
             // btn_stop
             // 
             this->btn_stop->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
@@ -303,7 +309,7 @@ namespace VRand
             this->btn_debugMenu->Font = (gcnew System::Drawing::Font(L"Consolas", 24, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
             this->btn_debugMenu->ForeColor = System::Drawing::Color::Red;
-            this->btn_debugMenu->Location = System::Drawing::Point(177, 414);
+            this->btn_debugMenu->Location = System::Drawing::Point(12, 414);
             this->btn_debugMenu->Name = L"btn_debugMenu";
             this->btn_debugMenu->Size = System::Drawing::Size(25, 40);
             this->btn_debugMenu->TabIndex = 16;
@@ -335,7 +341,6 @@ namespace VRand
             this->Controls->Add(this->btn_next);
             this->Controls->Add(this->btn_prev);
             this->Controls->Add(this->btn_stop);
-            this->Controls->Add(this->btn_playAll);
             this->Controls->Add(this->axVLCPlugin21);
             this->Controls->Add(this->btn_randomize);
             this->Controls->Add(this->lstVw_files);
@@ -380,9 +385,6 @@ namespace VRand
 
     private: System::Void AddVideoFileNamesAndPathsToListView()
     {
-        lstVw_files->SelectedItems->Clear();
-        this->lstVw_files->Items->Clear();
-
         for (int i = 0; i < static_cast<int>(m_videoFiles->size()); i++)
         {
             System::String^ fileName = gcnew System::String(m_videoFiles->at(i).path().filename().string().c_str());
@@ -432,15 +434,26 @@ namespace VRand
 
     private: System::Void EnqueueAllFromListViewToVLCPlaylist()
     {
-        lstVw_files->Items[0]->Focused = true;
-        lstVw_files->Items[0]->Selected = true;
-        lstVw_files->Items[0]->EnsureVisible();
-        lstVw_files->Select();
-
         for each(System::Windows::Forms::ListViewItem ^ item in lstVw_files->Items)
         {
             Uri^ uri = gcnew Uri(item->SubItems[1]->Text);
             axVLCPlugin21->playlist->add(uri->AbsoluteUri, item->Text, nullptr);
+        }
+    }
+
+    private: System::Void HighlightCurrentVLCItemInListView() // If it exists
+    {
+        if (lstVw_files->Items->Count == 0 || axVLCPlugin21->playlist->itemCount == 0 || !m_listViewMatchesVLCPlaylist) // Return if there's nothing to highlight or if there's a list mismatch
+        {
+            return;
+        }
+        else
+        {
+            lstVw_files->SelectedItems->Clear();
+            lstVw_files->Items[axVLCPlugin21->playlist->currentItem]->Focused = true;
+            lstVw_files->Items[axVLCPlugin21->playlist->currentItem]->Selected = true;
+            lstVw_files->Items[axVLCPlugin21->playlist->currentItem]->EnsureVisible();
+            lstVw_files->Select();
         }
     }
 
@@ -451,26 +464,35 @@ namespace VRand
             if (axVLCPlugin21->playlist->isPlaying)
             {
                 axVLCPlugin21->playlist->pause();
-                this->btn_pause->Text = emoji_play;
             }
             else
             {
                 axVLCPlugin21->playlist->play();
-                this->btn_pause->Text = emoji_pause;
             }
         }
         else if (this->lstVw_files->Items->Count > 0)
         {
+            axVLCPlugin21->playlist->stop();
+            axVLCPlugin21->playlist->clear();
             EnqueueAllFromListViewToVLCPlaylist();
+            m_listViewMatchesVLCPlaylist = true;
             axVLCPlugin21->playlist->play();
-            this->btn_pause->Text = emoji_pause;
         }
     }
 
     private: System::Void Stop()
     {
         axVLCPlugin21->playlist->stop();
-        this->btn_pause->Text = emoji_play;
+    }
+
+    private: System::Void Next()
+    {
+        axVLCPlugin21->playlist->next();
+    }
+
+    private: System::Void Previous()
+    {
+        axVLCPlugin21->playlist->prev();
     }
 
     private: System::Void btn_fileRoot_Click(System::Object^ sender, System::EventArgs^ e)
@@ -497,7 +519,6 @@ namespace VRand
                             LPWSTR lpszFilePath;
                             pItem->GetDisplayName(SIGDN_FILESYSPATH, &lpszFilePath);
                             AddToFileList(gcnew String(lpszFilePath));
-                            //Console::WriteLine("Selected: {0}", gcnew String(lpszFilePath));
                             CoTaskMemFree(lpszFilePath);
                             pItem->Release();
                         }
@@ -515,7 +536,7 @@ namespace VRand
 
         if (axVLCPlugin21->playlist->itemCount > 0)
         {
-            Stop();
+            m_listViewMatchesVLCPlaylist = false; // Videos are getting added while VLC already has a playlist causing a mismatch
         }
     }
 
@@ -524,21 +545,14 @@ namespace VRand
         std::random_device rd;
         std::mt19937 g(rd());
         std::shuffle(m_videoFiles->begin(), m_videoFiles->end(), g);
+        lstVw_files->SelectedItems->Clear();
+        lstVw_files->Items->Clear();
         AddVideoFileNamesAndPathsToListView();
-    }
-    
-    private: System::Void btn_playAll_Click(System::Object^ sender, System::EventArgs^ e)
-    {
-        axVLCPlugin21->playlist->stop();
-        axVLCPlugin21->playlist->clear();
-
-        if (this->lstVw_files->Items->Count > 0)
+        
+        if (axVLCPlugin21->playlist->itemCount > 0)
         {
-            EnqueueAllFromListViewToVLCPlaylist();
+            m_listViewMatchesVLCPlaylist = false; // The list may have the same contents but the order is different, so it no longer matches the VLC playlist
         }
-
-        axVLCPlugin21->playlist->play();
-        this->btn_pause->Text = emoji_pause;
     }
 
     private: System::Void btn_stop_Click(System::Object^ sender, System::EventArgs^ e)
@@ -548,12 +562,12 @@ namespace VRand
 
     private: System::Void btn_next_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        axVLCPlugin21->playlist->next();
+        Next();
     }
 
     private: System::Void btn_prev_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        axVLCPlugin21->playlist->prev();
+        Previous();
     }
 
     private: System::Void btn_pause_Click(System::Object^ sender, System::EventArgs^ e)
@@ -572,12 +586,21 @@ namespace VRand
         if (result == System::Windows::Forms::DialogResult::Yes)
         {
             m_videoFiles->clear();
-            this->lstVw_files->Items->Clear();
+            lstVw_files->Items->Clear();
             if (axVLCPlugin21->playlist->isPlaying)
             {
                 Stop();
             }
             axVLCPlugin21->playlist->clear();
+
+            if (axVLCPlugin21->playlist->itemCount > 0)
+            {
+                m_listViewMatchesVLCPlaylist = false;
+            }
+            else if (axVLCPlugin21->playlist->itemCount == 0)
+            {
+                m_listViewMatchesVLCPlaylist = true; // Both lists are empty so they match again
+            }
         }
     }
 

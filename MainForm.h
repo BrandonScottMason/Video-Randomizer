@@ -59,7 +59,19 @@ namespace VRand
     public: System::Void PlayerPlaying(System::Object^ sender, System::EventArgs^ e) // Happens to be called when a new video starts playing
     {
         this->btn_pause->Text = m_emojiPause;
+        ApplySubtitlePrefs();
         HighlightCurrentVLCItemInListView();
+    }
+
+    public: System::Void SubtitleTrackMenuItem_Click(System::Object^ sender, System::EventArgs^ e)
+    {
+        System::Windows::Forms::ToolStripMenuItem^ clickedItem = dynamic_cast<System::Windows::Forms::ToolStripMenuItem^>(sender);
+        if (clickedItem != nullptr)
+        {
+            int trackIndex = Convert::ToInt32(clickedItem->Text->Substring(0, 1)); // Very first character will be a number representing the track index
+            axVLCPlugin21->subtitle->track = trackIndex;
+            axVLCPlugin21->video->subtitle = trackIndex;
+        }
     }
 
     protected:
@@ -132,12 +144,38 @@ namespace VRand
                 return true;
             }
 
+            if (keyData == System::Windows::Forms::Keys::V) // V to toggle subtitles (also match's VLC's default subtitle toggle hotkey)
+            {
+                if (axVLCPlugin21->subtitle->count <= 2)
+                {
+                    ToggleSubtitlesOrShowMenu();
+                }
+                else // Cycle through subtitle tracks. This is only an option through the keyboard, clicking the button will provide a drop down list.
+                {
+                    int currentTrackNumber = axVLCPlugin21->subtitle->track;
+                    int subtitleTrackCount = axVLCPlugin21->subtitle->count;
+                    if (currentTrackNumber < (subtitleTrackCount - 1))
+                    {
+                        axVLCPlugin21->subtitle->track = currentTrackNumber + 1;
+                        axVLCPlugin21->video->subtitle = currentTrackNumber + 1;
+                    }
+                    else
+                    {
+                        // Reset back to 0 which is the "Disable Subtitles" track
+                        axVLCPlugin21->subtitle->track = 0;
+                        axVLCPlugin21->video->subtitle = 0;
+                    }
+                }
+                return true;
+            }
+
             // For keys that are not processed, call the base class's method
             return __super::ProcessCmdKey(msg, keyData);
         };
 
     private:
         System::Boolean m_listViewMatchesVLCPlaylist = true;
+        System::Boolean m_enableSubtitles = false; // My preference is to have them disabled by default
         System::String^ m_emojiPause = u8"⏸️";
         System::String^ m_emojiPlay = u8"▶️";
         System::ComponentModel::BackgroundWorker^ backgroundWorker1;
@@ -169,13 +207,14 @@ namespace VRand
         /// </summary>
         System::Windows::Forms::ListViewItem^ m_listViewItem;
         AxAXVLC::AxVLCPlugin2^ axVLCPlugin21;
-
+        System::Windows::Forms::ToolTip^ toolTip1;
         System::Windows::Forms::Button^ btn_stop;
         System::Windows::Forms::Button^ btn_prev;
         System::Windows::Forms::Button^ btn_next;
         System::Windows::Forms::Button^ btn_pause;
         System::Windows::Forms::Button^ btn_fullScreen;
-private: System::Windows::Forms::ToolTip^ toolTip1;
+        System::Windows::Forms::Button^ btn_subtitles;
+        System::Windows::Forms::ContextMenuStrip^ contextMenuStrip1;
 
         /// <summary>
         ///    Directory Entries that the List View is displaying
@@ -206,6 +245,8 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
             this->btn_debugMenu = (gcnew System::Windows::Forms::Button());
             this->btn_clearList = (gcnew System::Windows::Forms::Button());
             this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
+            this->btn_subtitles = (gcnew System::Windows::Forms::Button());
+            this->contextMenuStrip1 = (gcnew System::Windows::Forms::ContextMenuStrip(this->components));
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
@@ -271,7 +312,7 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
             this->axVLCPlugin21->Location = System::Drawing::Point(758, 4);
             this->axVLCPlugin21->Name = L"axVLCPlugin21";
             this->axVLCPlugin21->OcxState = (cli::safe_cast<System::Windows::Forms::AxHost::State^>(resources->GetObject(L"axVLCPlugin21.OcxState")));
-            this->axVLCPlugin21->Size = System::Drawing::Size(740, 450);
+            this->axVLCPlugin21->Size = System::Drawing::Size(739, 449);
             this->axVLCPlugin21->TabIndex = 8;
             // 
             // btn_stop
@@ -334,14 +375,14 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
             // 
             this->btn_fullScreen->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_fullScreen->Cursor = System::Windows::Forms::Cursors::SizeAll;
-            this->btn_fullScreen->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+            this->btn_fullScreen->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 20.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_fullScreen->Location = System::Drawing::Point(594, 414);
+            this->btn_fullScreen->Location = System::Drawing::Point(702, 412);
             this->btn_fullScreen->Name = L"btn_fullScreen";
-            this->btn_fullScreen->Size = System::Drawing::Size(158, 40);
+            this->btn_fullScreen->Size = System::Drawing::Size(50, 40);
             this->btn_fullScreen->TabIndex = 15;
-            this->btn_fullScreen->Text = L"Toggle Full Screen";
-            this->toolTip1->SetToolTip(this->btn_fullScreen, L"(F)");
+            this->btn_fullScreen->Text = L"🗖";
+            this->toolTip1->SetToolTip(this->btn_fullScreen, L"Full Screen Toggle (F)");
             this->btn_fullScreen->UseVisualStyleBackColor = true;
             this->btn_fullScreen->Click += gcnew System::EventHandler(this, &MainForm::btn_fullScreen_Click);
             // 
@@ -351,7 +392,7 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
             this->btn_debugMenu->Font = (gcnew System::Drawing::Font(L"Consolas", 24, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
             this->btn_debugMenu->ForeColor = System::Drawing::Color::Red;
-            this->btn_debugMenu->Location = System::Drawing::Point(12, 414);
+            this->btn_debugMenu->Location = System::Drawing::Point(188, 414);
             this->btn_debugMenu->Name = L"btn_debugMenu";
             this->btn_debugMenu->Size = System::Drawing::Size(25, 40);
             this->btn_debugMenu->TabIndex = 16;
@@ -372,11 +413,31 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
             this->btn_clearList->UseVisualStyleBackColor = true;
             this->btn_clearList->Click += gcnew System::EventHandler(this, &MainForm::btn_clearList_Click);
             // 
+            // btn_subtitles
+            // 
+            this->btn_subtitles->Enabled = false;
+            this->btn_subtitles->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->btn_subtitles->Location = System::Drawing::Point(12, 412);
+            this->btn_subtitles->Name = L"btn_subtitles";
+            this->btn_subtitles->Size = System::Drawing::Size(45, 40);
+            this->btn_subtitles->TabIndex = 18;
+            this->btn_subtitles->Text = L"[CC]";
+            this->toolTip1->SetToolTip(this->btn_subtitles, L"Subtitles [V]");
+            this->btn_subtitles->UseVisualStyleBackColor = true;
+            this->btn_subtitles->Click += gcnew System::EventHandler(this, &MainForm::btn_subtitles_Click);
+            // 
+            // contextMenuStrip1
+            // 
+            this->contextMenuStrip1->Name = L"contextMenuStrip1";
+            this->contextMenuStrip1->Size = System::Drawing::Size(61, 4);
+            // 
             // MainForm
             // 
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1513, 462);
+            this->Controls->Add(this->btn_subtitles);
             this->Controls->Add(this->btn_clearList);
             this->Controls->Add(this->btn_debugMenu);
             this->Controls->Add(this->btn_fullScreen);
@@ -526,6 +587,7 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
     private: System::Void Stop()
     {
         axVLCPlugin21->playlist->stop();
+        btn_subtitles->Enabled = false;
     }
 
     private: System::Void Next()
@@ -555,15 +617,8 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
                 Stop();
             }
             axVLCPlugin21->playlist->clear();
-
-            if (axVLCPlugin21->playlist->itemCount > 0)
-            {
-                m_listViewMatchesVLCPlaylist = false;
-            }
-            else if (axVLCPlugin21->playlist->itemCount == 0)
-            {
-                m_listViewMatchesVLCPlaylist = true; // Both lists are empty so they match again
-            }
+            m_listViewMatchesVLCPlaylist = true; // Both lists are empty so they match again
+            btn_subtitles->Enabled = false;
         }
     }
 
@@ -579,6 +634,65 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
         if (axVLCPlugin21->playlist->itemCount > 0)
         {
             m_listViewMatchesVLCPlaylist = false; // The list may have the same contents but the order is different, so it no longer matches the VLC playlist
+        }
+    }
+
+    /// <summary>
+    /// Subtitles settings need to applied at the start of each video, but can be changed at any time.
+    /// </summary>
+    private: System::Void ApplySubtitlePrefs()
+    {
+        int subtitleTrackCount = axVLCPlugin21->subtitle->count;
+        if (!m_enableSubtitles)
+        {
+            axVLCPlugin21->subtitle->track = 0;
+            axVLCPlugin21->video->subtitle = 0;
+        }
+        else
+        {
+            if (subtitleTrackCount > 0)
+            {
+                axVLCPlugin21->subtitle->track = 1;
+                axVLCPlugin21->video->subtitle = 1;
+            }
+        }
+
+        if (subtitleTrackCount <= 0)
+        {
+            btn_subtitles->Enabled = false;
+        }
+        else if (subtitleTrackCount > 0)
+        {
+            btn_subtitles->Enabled = true;
+            
+            if (subtitleTrackCount > 2)
+            {
+                contextMenuStrip1->Items->Clear();
+                for (int i = 0; i < subtitleTrackCount; i++)
+                {
+                    System::Windows::Forms::ToolStripMenuItem^ item = gcnew System::Windows::Forms::ToolStripMenuItem(i + ": " + axVLCPlugin21->subtitle->description(i));
+                    item->Click += gcnew System::EventHandler(this, &MainForm::SubtitleTrackMenuItem_Click);
+                    contextMenuStrip1->Items->Add(item);
+                }
+            }
+        }
+    }
+
+    private: System::Void ToggleSubtitlesOrShowMenu()
+    {
+        // The call to ApplySubtitlePrefs() that occurs in the PlayerPlaying event doesn't capture all subtitle tracks, only some. 
+        // Maybe it takes a few seconds for VLC to populate all the subtitle track information, so calling it here again ensures that all tracks are captured.
+        // TODO: Ultilize multithreading to call ApplySubtitlePrefs() after a short delay following the PlayerPlaying event to see if that captures all subtitle tracks without needing to call it here as well.
+        ApplySubtitlePrefs();
+
+        if (axVLCPlugin21->subtitle->count > 2) // "< 1" will show {0: Disable, 1: [First Subtitle Track]}. For now lets see the UI/UX experience of the button being a toggle for two subtitle tracks.
+        {
+            contextMenuStrip1->Show(Cursor->Position);
+        }
+        else
+        {
+            m_enableSubtitles = !m_enableSubtitles;
+            ApplySubtitlePrefs();
         }
     }
 
@@ -689,5 +803,10 @@ private: System::Windows::Forms::ToolTip^ toolTip1;
         AddVideoFileNamesAndPathsToListView();
     }
 #endif // _DEBUG
+
+    private: System::Void btn_subtitles_Click(System::Object^ sender, System::EventArgs^ e) 
+    {
+        ToggleSubtitlesOrShowMenu();
+    }
 };
 }

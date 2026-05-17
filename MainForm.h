@@ -719,9 +719,18 @@ namespace VRand
                         {
                             LPWSTR lpszFilePath;
                             pItem->GetDisplayName(SIGDN_FILESYSPATH, &lpszFilePath);
+                            m_videoFiles->clear();
                             AddToFileList(gcnew String(lpszFilePath));
                             CoTaskMemFree(lpszFilePath);
                             pItem->Release();
+
+                            std::sort(m_videoFiles->begin(), m_videoFiles->end());
+                            AddVideoFileNamesAndPathsToListView();
+
+                            if (axVLCPlugin21->playlist->itemCount > 0)
+                            {
+                                m_listViewMatchesVLCPlaylist = false; // Videos are getting added while VLC already has a playlist causing a mismatch
+                            }
                         }
                     }
                     pItems->Release();
@@ -730,15 +739,6 @@ namespace VRand
             pFileOpen->Release();
         }
         CoUninitialize();
-
-        std::sort(m_videoFiles->begin(), m_videoFiles->end());
-
-        AddVideoFileNamesAndPathsToListView();
-
-        if (axVLCPlugin21->playlist->itemCount > 0)
-        {
-            m_listViewMatchesVLCPlaylist = false; // Videos are getting added while VLC already has a playlist causing a mismatch
-        }
     }
 
     private: System::Void btn_fileRoot_Click(System::Object^ sender, System::EventArgs^ e)

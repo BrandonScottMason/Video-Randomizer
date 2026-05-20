@@ -12,10 +12,6 @@ namespace fs = std::filesystem;
 namespace VRand
 {
     using namespace System;
-    using namespace System::ComponentModel;
-    using namespace System::Collections;
-    using namespace System::Data;
-    using namespace System::Drawing;
 
     /// <summary>
     /// Summary for MainForm
@@ -123,10 +119,17 @@ namespace VRand
                 return true;
             }
 
-            /// Add to playlist
+            /// Add folder(s) to playlist
             if (keyData == (System::Windows::Forms::Keys::Oemplus | System::Windows::Forms::Keys::Control) || keyData == (System::Windows::Forms::Keys::Add | System::Windows::Forms::Keys::Control)) // Ctrl + Plus for adding to list
             {
-                PromptAddToListView();
+                PromptAddFoldersToListView();
+                return true;
+            }
+
+            /// Add files(s) to playlist
+            if (keyData == (System::Windows::Forms::Keys::OemPeriod | System::Windows::Forms::Keys::Control) || keyData == (System::Windows::Forms::Keys::Add | System::Windows::Forms::Keys::Control)) // Ctrl + Plus for adding to list
+            {
+                PromptAddFilesToListView();
                 return true;
             }
 
@@ -180,7 +183,7 @@ namespace VRand
         System::String^ m_emojiPlay = u8"▶️";
         System::ComponentModel::BackgroundWorker^ backgroundWorker1;
         System::Windows::Forms::ListView^ lstVw_files;
-        System::Windows::Forms::Button^ btn_fileRoot;
+        System::Windows::Forms::Button^ btn_addFolders;
         System::Windows::Forms::Button^ btn_clearList;
         System::Windows::Forms::Button^ btn_debugMenu;
         System::ComponentModel::IContainer^ components;
@@ -195,10 +198,11 @@ namespace VRand
         ///    Copied from: https://gist.github.com/aaomidi/0a3b5c9bd563c9e012518b495410dc0e
         /// </summary>
         static array<System::String^>^ m_supportedVideoFileExtensions = gcnew array<System::String^>(38){
-            "webm", "mkv", "flv", "vob", "ogv", "ogg", "rrc","gifv", "mng", "mov",
-            "avi", "qt", "wmv", "yuv", "rm", "asf", "amv", "mp4", "m4p", "m4v",
-            "mpg", "mp2", "mpeg", "mpe", "mpv", "m4v", "svi", "3gp", "3g2", "mxf",
-            "roq", "nsv", "flv", "f4v", "f4p", "f4a", "f4b", "mod" };
+            ".webm", ".mkv", ".flv", ".vob", ".ogv", ".ogg", ".rrc",".gifv", ".mng", ".mov",
+            ".avi", ".qt", ".wmv", ".yuv", ".rm", ".asf", ".amv", ".mp4", ".m4p", ".m4v",
+            ".mpg", ".mp2", ".mpeg", ".mpe", ".mpv", ".m4v", ".svi", ".3gp", ".3g2", ".mxf",
+            ".roq", ".nsv", ".flv", ".f4v", ".f4p", ".f4a", ".f4b", ".mod" };
+
         System::Windows::Forms::ColumnHeader^ columnHeader2;
         System::Windows::Forms::Button^ btn_randomize;
 
@@ -215,6 +219,7 @@ namespace VRand
         System::Windows::Forms::Button^ btn_fullScreen;
         System::Windows::Forms::Button^ btn_subtitles;
         System::Windows::Forms::ContextMenuStrip^ contextMenuStrip1;
+        System::Windows::Forms::Button^ btn_addFiles;
 
         /// <summary>
         ///    Directory Entries that the List View is displaying
@@ -230,7 +235,7 @@ namespace VRand
         {
             this->components = (gcnew System::ComponentModel::Container());
             System::ComponentModel::ComponentResourceManager^ resources = (gcnew System::ComponentModel::ComponentResourceManager(MainForm::typeid));
-            this->btn_fileRoot = (gcnew System::Windows::Forms::Button());
+            this->btn_addFolders = (gcnew System::Windows::Forms::Button());
             this->backgroundWorker1 = (gcnew System::ComponentModel::BackgroundWorker());
             this->lstVw_files = (gcnew System::Windows::Forms::ListView());
             this->columnHeader1 = (gcnew System::Windows::Forms::ColumnHeader());
@@ -246,22 +251,23 @@ namespace VRand
             this->btn_clearList = (gcnew System::Windows::Forms::Button());
             this->toolTip1 = (gcnew System::Windows::Forms::ToolTip(this->components));
             this->btn_subtitles = (gcnew System::Windows::Forms::Button());
+            this->btn_addFiles = (gcnew System::Windows::Forms::Button());
             this->contextMenuStrip1 = (gcnew System::Windows::Forms::ContextMenuStrip(this->components));
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->BeginInit();
             this->SuspendLayout();
             // 
-            // btn_fileRoot
+            // btn_addFolders
             // 
-            this->btn_fileRoot->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+            this->btn_addFolders->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 11.25F, System::Drawing::FontStyle::Regular, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_fileRoot->Location = System::Drawing::Point(12, 4);
-            this->btn_fileRoot->Name = L"btn_fileRoot";
-            this->btn_fileRoot->Size = System::Drawing::Size(30, 25);
-            this->btn_fileRoot->TabIndex = 0;
-            this->btn_fileRoot->Text = L"+";
-            this->toolTip1->SetToolTip(this->btn_fileRoot, L"Add Folders (Ctrl +)");
-            this->btn_fileRoot->UseVisualStyleBackColor = true;
-            this->btn_fileRoot->Click += gcnew System::EventHandler(this, &MainForm::btn_fileRoot_Click);
+            this->btn_addFolders->Location = System::Drawing::Point(11, 5);
+            this->btn_addFolders->Name = L"btn_addFolders";
+            this->btn_addFolders->Size = System::Drawing::Size(30, 25);
+            this->btn_addFolders->TabIndex = 0;
+            this->btn_addFolders->Text = L"📁";
+            this->toolTip1->SetToolTip(this->btn_addFolders, L"Add Folder(s) (Ctrl +)");
+            this->btn_addFolders->UseVisualStyleBackColor = true;
+            this->btn_addFolders->Click += gcnew System::EventHandler(this, &MainForm::btn_fileRoot_Click);
             // 
             // lstVw_files
             // 
@@ -291,10 +297,9 @@ namespace VRand
             // 
             // btn_randomize
             // 
-            this->btn_randomize->Anchor = static_cast<System::Windows::Forms::AnchorStyles>((System::Windows::Forms::AnchorStyles::Bottom | System::Windows::Forms::AnchorStyles::Left));
             this->btn_randomize->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
                 static_cast<System::Byte>(0)));
-            this->btn_randomize->Location = System::Drawing::Point(48, 4);
+            this->btn_randomize->Location = System::Drawing::Point(327, 5);
             this->btn_randomize->Name = L"btn_randomize";
             this->btn_randomize->Size = System::Drawing::Size(115, 25);
             this->btn_randomize->TabIndex = 7;
@@ -427,6 +432,19 @@ namespace VRand
             this->btn_subtitles->UseVisualStyleBackColor = true;
             this->btn_subtitles->Click += gcnew System::EventHandler(this, &MainForm::btn_subtitles_Click);
             // 
+            // btn_addFiles
+            // 
+            this->btn_addFiles->Font = (gcnew System::Drawing::Font(L"Microsoft Sans Serif", 9.75F, System::Drawing::FontStyle::Bold, System::Drawing::GraphicsUnit::Point,
+                static_cast<System::Byte>(0)));
+            this->btn_addFiles->Location = System::Drawing::Point(41, 5);
+            this->btn_addFiles->Name = L"btn_addFiles";
+            this->btn_addFiles->Size = System::Drawing::Size(30, 25);
+            this->btn_addFiles->TabIndex = 19;
+            this->btn_addFiles->Text = L"+";
+            this->toolTip1->SetToolTip(this->btn_addFiles, L"Add File(s) (Ctrl .)");
+            this->btn_addFiles->UseVisualStyleBackColor = true;
+            this->btn_addFiles->Click += gcnew System::EventHandler(this, &MainForm::button1_Click);
+            // 
             // contextMenuStrip1
             // 
             this->contextMenuStrip1->Name = L"contextMenuStrip1";
@@ -437,6 +455,7 @@ namespace VRand
             this->AutoScaleDimensions = System::Drawing::SizeF(6, 13);
             this->AutoScaleMode = System::Windows::Forms::AutoScaleMode::Font;
             this->ClientSize = System::Drawing::Size(1513, 462);
+            this->Controls->Add(this->btn_addFiles);
             this->Controls->Add(this->btn_subtitles);
             this->Controls->Add(this->btn_clearList);
             this->Controls->Add(this->btn_debugMenu);
@@ -448,7 +467,7 @@ namespace VRand
             this->Controls->Add(this->axVLCPlugin21);
             this->Controls->Add(this->btn_randomize);
             this->Controls->Add(this->lstVw_files);
-            this->Controls->Add(this->btn_fileRoot);
+            this->Controls->Add(this->btn_addFolders);
             this->Name = L"MainForm";
             this->Text = L"Video Randomizer";
             (cli::safe_cast<System::ComponentModel::ISupportInitialize^>(this->axVLCPlugin21))->EndInit();
@@ -505,7 +524,7 @@ namespace VRand
         try {
             for (const auto& entry : fs::recursive_directory_iterator(path, std::filesystem::directory_options::skip_permission_denied))
             {
-                System::String^ ext = gcnew System::String(entry.path().extension().c_str());
+                System::String^ ext = "." + gcnew System::String(entry.path().extension().c_str());
                 if (ContainsString(m_supportedVideoFileExtensions, ext)) // This skips any non-video files
                 {
                     m_videoFiles->push_back(entry);
@@ -696,7 +715,7 @@ namespace VRand
         }
     }
 
-    private: System::Void PromptAddToListView()
+    private: System::Void PromptAddFoldersToListView()
     {
         HRESULT hr = CoInitializeEx(NULL, COINIT_APARTMENTTHREADED | COINIT_DISABLE_OLE1DDE);
         IFileOpenDialog* pFileOpen = nullptr;
@@ -741,9 +760,27 @@ namespace VRand
         CoUninitialize();
     }
 
+    private: System::Void PromptAddFilesToListView()
+    {
+        System::Windows::Forms::OpenFileDialog^ openFileD = gcnew System::Windows::Forms::OpenFileDialog();
+        openFileD->Multiselect = true;
+        openFileD->Filter = "Video Files|*" + String::Join(";*", m_supportedVideoFileExtensions);
+        if (openFileD->ShowDialog() == System::Windows::Forms::DialogResult::OK)
+        {
+            for each (System::String ^ file in openFileD->FileNames)
+            {
+                System::String^ filePath = gcnew System::String(file);
+                System::String^ fileName = gcnew System::String(System::IO::Path::GetFileName(file)); 
+                array<System::String^>^ row = gcnew array<System::String^>{fileName, filePath};
+                this->m_listViewItem = gcnew Windows::Forms::ListViewItem(row);
+                this->lstVw_files->Items->Add(this->m_listViewItem);
+            }
+        }
+    }
+
     private: System::Void btn_fileRoot_Click(System::Object^ sender, System::EventArgs^ e)
     {
-        PromptAddToListView();
+        PromptAddFoldersToListView();
     }
 
     private: System::Void btn_randomize_Click(System::Object^ sender, System::EventArgs^ e)
@@ -807,6 +844,11 @@ namespace VRand
     private: System::Void btn_subtitles_Click(System::Object^ sender, System::EventArgs^ e) 
     {
         ToggleSubtitlesOrShowMenu();
+    }
+    
+    private: System::Void button1_Click(System::Object^ sender, System::EventArgs^ e) 
+    {
+        PromptAddFilesToListView();
     }
 };
 }
